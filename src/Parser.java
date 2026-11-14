@@ -3,6 +3,10 @@ package src;
 import java.util.*;
 import java.util.regex.*;
 
+/**
+ * Класс для разбора и выполнения SQL-подобных запросов.
+ */
+
 public class Parser {
 
     private static final Pattern INSERT_PATTERN = Pattern.compile("INSERT INTO (\\w+)\\s*(?:\\((.+?)\\))?\\s*VALUES\\s*\\((.+)\\)", Pattern.CASE_INSENSITIVE);
@@ -86,6 +90,7 @@ public class Parser {
                 }
             }
             System.out.println("Обновлено строк: " + count);
+            table.rebuildIndexes();
             return;
         }
 
@@ -105,6 +110,7 @@ public class Parser {
                 }
             }
             System.out.println("Удалено строк: " + count);
+            table.rebuildIndexes();
             return;
         }
 

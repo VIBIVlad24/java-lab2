@@ -7,6 +7,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+/**
+ * Главный класс СУБД. Управляет таблицами, сохранением на диск и загрузкой.
+ */
+
 public class Database implements Serializable {
     private Map<String, Table> tables = new HashMap<>();
 
@@ -77,36 +81,37 @@ public class Database implements Serializable {
             if (row.containsKey("id")) {
                 Object newId = row.get("id");
                 for (Map<String, Object> r : rows) {
-                    if (r.get("id").equals(newId)) return false;
+                    if (r.get("id") != null && r.get("id").equals(newId)) return false;
                 }
             }
             rows.add(row);
-            updateIdx(rows.size() - 1, row);
+            rebuildIndexes();
             return true;
-        }
-
-        private void updateIdx(int rowIndex, Map<String, Object> row) {
-            for (String col : indexes.keySet()) {
-                if (row.containsKey(col)) {
-                    Object val = row.get(col);
-                    indexes.get(col).putIfAbsent(val, new ArrayList<>());
-                    indexes.get(col).get(val).add(rowIndex);
-                }
-            }
         }
 
         public void createIndex(String column) {
             if (!columns.contains(column)) return;
-            Map<Object, List<Integer>> index = new HashMap<>();
-            for (int i = 0; i < rows.size(); i++) {
-                Object val = rows.get(i).get(column);
-                if (val != null) {
-                    index.putIfAbsent(val, new ArrayList<>());
-                    index.get(val).add(i);
-                }
-            }
-            indexes.put(column, index);
+            indexes.put(column, new HashMap<>());
+            rebuildIndexes();
             System.out.println("Индекс по " + column + " создан.");
+        }
+
+        /**
+         * Пересобирает все существующие индексы.
+         * Вызывается после вставки, удаления или обновления строк.
+         */
+        public void rebuildIndexes() {
+            for (String col : indexes.keySet()) {
+                Map<Object, List<Integer>> idx = new HashMap<>();
+                for (int i = 0; i < rows.size(); i++) {
+                    Object val = rows.get(i).get(col);
+                    if (val != null) {
+                        idx.putIfAbsent(val, new ArrayList<>());
+                        idx.get(val).add(i);
+                    }
+                }
+                indexes.put(col, idx);
+            }
         }
     }
 }

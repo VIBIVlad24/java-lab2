@@ -2,6 +2,10 @@ package src;
 
 import java.util.Scanner;
 
+/**
+ * Точка входа в программу. Консольный интерфейс.
+ */
+
 public class Main {
     public static void main(String[] args) {
         Database db = new Database();
